@@ -1,0 +1,5 @@
+exclude:
+  - attendance-data.txt
+  - attendance-accounts.txt
+  - attendance-report.csv
+  - "*.class"

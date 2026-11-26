@@ -1,0 +1,1284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f5">
+  <title>Campus — University Attendance</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20342e;
+      --muted: #788781;
+      --line: #e6ede8;
+      --paper: #fff;
+      --canvas: #f5f7f5;
+      --green: #2f7864;
+      --green-dark: #225e4f;
+      --green-soft: #eaf4ee;
+      --orange: #a96832;
+      --orange-soft: #fbf2e8;
+      --red: #a94f4f;
+      --red-soft: #f9eded;
+      --shadow: 0 12px 34px rgba(37, 68, 57, .055);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(47, 120, 100, .25);
+      outline-offset: 2px;
+    }
+    [hidden] { display: none !important; }
+    .login-shell {
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      padding: 28px;
+      background:
+        radial-gradient(ellipse at 12% 8%, rgba(216, 238, 225, .65), transparent 34%),
+        var(--canvas);
+    }
+    .login-card {
+      display: grid;
+      width: min(940px, 100%);
+      min-height: 550px;
+      grid-template-columns: .9fr 1.1fr;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--paper);
+      box-shadow: 0 25px 70px rgba(37, 68, 57, .1);
+    }
+    .login-story {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 38px;
+      background: linear-gradient(145deg, #286c59, #1d4d42);
+      color: white;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border-radius: 13px;
+      background: rgba(255,255,255,.15);
+      font-size: 19px;
+      font-weight: 750;
+    }
+    .brand-name { font-size: 16px; font-weight: 750; letter-spacing: -.3px; }
+    .brand-caption { color: #d3e6dc; font-size: 11px; }
+    .story-copy { max-width: 340px; margin: 38px 0; }
+    .story-eyebrow { color: #c3e2d1; font-size: 10px; font-weight: 750; letter-spacing: 1.4px; }
+    .story-copy h1 { margin: 13px 0; font-size: clamp(30px, 4vw, 42px); letter-spacing: -1.5px; line-height: 1.1; }
+    .story-copy p { color: #d8e9df; font-size: 13px; line-height: 1.8; }
+    .story-footer { color: #c3d9cd; font-size: 11px; }
+    .login-content { padding: 43px clamp(25px, 5vw, 56px); }
+    .login-content h2 { margin: 0; font-size: 24px; letter-spacing: -.7px; }
+    .login-intro { margin: 7px 0 23px; color: var(--muted); font-size: 12px; }
+    .role-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 10px; background: #f2f5f3; }
+    .role-tab {
+      min-height: 39px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .role-tab.active { background: white; color: var(--green-dark); box-shadow: 0 2px 6px rgba(30, 65, 50, .08); }
+    .login-form { display: grid; gap: 13px; margin-top: 21px; }
+    .field { display: grid; gap: 6px; }
+    .field label { color: #56665f; font-size: 11px; font-weight: 650; }
+    .field input, .field select {
+      width: 100%;
+      height: 42px;
+      padding: 0 12px;
+      border: 1px solid #dfe8e2;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 12px;
+    }
+    .field input:focus, .field select:focus { border-color: #9dc9b3; outline-color: rgba(47,120,100,.18); }
+    .button {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 650;
+      transition: background .16s, border-color .16s, transform .16s;
+    }
+    .button:hover { transform: translateY(-1px); }
+    .button-primary { background: var(--green); color: white; }
+    .button-primary:hover { background: var(--green-dark); }
+    .button-secondary { border-color: var(--line); background: white; color: #53625d; }
+    .button-secondary:hover { border-color: #cbd9d1; background: #fbfdfb; }
+    .button-quiet { background: transparent; color: var(--green-dark); }
+    .button-danger { border-color: #f0dada; background: white; color: var(--red); }
+    .login-message { min-height: 18px; margin: 0; color: var(--muted); font-size: 11px; }
+    .login-message.error { color: var(--red); }
+    .login-message.success { color: var(--green-dark); }
+    .privacy-note { margin-top: 20px; padding: 11px 12px; border-radius: 8px; background: #f5f8f5; color: #788781; font-size: 10px; line-height: 1.6; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 3;
+      display: flex;
+      width: 245px;
+      flex-direction: column;
+      padding: 25px 16px 18px;
+      border-right: 1px solid var(--line);
+      background: #fbfcfb;
+    }
+    .sidebar .brand { padding: 0 8px; color: var(--ink); }
+    .sidebar .brand-mark { width: 36px; height: 36px; border-radius: 11px; background: var(--green); color: white; }
+    .sidebar .brand-caption { color: var(--muted); font-size: 10px; }
+    .nav-label { margin: 37px 10px 10px; color: #9ba7a0; font-size: 10px; font-weight: 750; letter-spacing: 1.1px; }
+    .nav { display: grid; gap: 5px; }
+    .nav-button {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 12px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: #718079;
+      text-align: left;
+      transition: background .16s, color .16s;
+    }
+    .nav-button:hover { background: #f0f5f2; color: var(--ink); }
+    .nav-button.active { background: var(--green-soft); color: var(--green-dark); font-weight: 650; }
+    .nav-icon { display: inline-grid; width: 19px; place-items: center; font-size: 16px; }
+    .sidebar-bottom { margin-top: auto; }
+    .local-note { padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--muted); font-size: 10px; }
+    .local-note strong { display: block; margin-bottom: 3px; color: var(--ink); font-size: 11px; }
+    .local-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; background: #62a887; }
+    .main { width: calc(100% - 245px); min-width: 0; margin-left: 245px; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      min-height: 68px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 0 34px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(14px);
+    }
+    .breadcrumb { color: #98a29e; font-size: 11px; }
+    .breadcrumb strong { color: #53625d; font-weight: 650; }
+    .topbar-actions { display: flex; align-items: center; gap: 13px; }
+    .today-label { color: var(--muted); font-size: 11px; }
+    .avatar { display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid #dfeae3; border-radius: 50%; background: #edf5ef; color: var(--green-dark); font-size: 10px; font-weight: 750; }
+    .content { width: min(1180px, 100%); margin: 0 auto; padding: 32px 34px 52px; }
+    .page { display: none; }
+    .page.active { display: block; animation: appear .18s ease-out; }
+    @keyframes appear { from { opacity: .5; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 23px; }
+    .eyebrow { margin-bottom: 6px; color: var(--green); font-size: 10px; font-weight: 750; letter-spacing: 1.2px; }
+    h1 { margin: 0; font-size: clamp(24px, 3vw, 30px); font-weight: 680; letter-spacing: -1px; line-height: 1.2; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+    .toolbar { display: flex; align-items: center; gap: 8px; }
+    .date-control { display: flex; height: 39px; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--muted); }
+    .date-control input { width: 126px; padding: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 11px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin-bottom: 17px; }
+    .stat-card { min-height: 115px; padding: 15px 16px; border: 1px solid var(--line); border-radius: 11px; background: white; box-shadow: var(--shadow); }
+    .stat-label { color: var(--muted); font-size: 11px; font-weight: 550; }
+    .stat-value { margin-top: 9px; font-size: 26px; font-weight: 720; letter-spacing: -.7px; line-height: 1.1; }
+    .stat-foot { margin-top: 6px; color: #929e98; font-size: 10px; }
+    .panel { overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: white; box-shadow: var(--shadow); }
+    .panel-heading { display: flex; min-height: 62px; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 17px; border-bottom: 1px solid #edf1ee; }
+    .panel-title { margin: 0; font-size: 13px; font-weight: 700; }
+    .panel-subtitle { margin-top: 3px; color: #899590; font-size: 10px; }
+    .panel-actions { display: flex; align-items: center; gap: 8px; }
+    .search { display: flex; width: 205px; height: 34px; align-items: center; gap: 7px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; background: white; color: #98a29e; }
+    .search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 11px; }
+    .search input::placeholder { color: #a2aca7; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th { height: 39px; padding: 0 15px; background: #fcfdfc; color: #96a19c; font-size: 9px; font-weight: 700; letter-spacing: .45px; text-align: left; text-transform: uppercase; }
+    td { height: 55px; padding: 7px 15px; border-top: 1px solid #f0f3f1; color: #53615c; font-size: 11px; }
+    tbody tr:hover { background: #fcfdfc; }
+    .student-cell { display: flex; align-items: center; gap: 9px; }
+    .student-avatar { display: grid; width: 30px; height: 30px; flex: none; place-items: center; border-radius: 50%; background: #eff5f0; color: #587d6b; font-size: 9px; font-weight: 750; }
+    .student-name { display: block; color: #283a35; font-weight: 650; }
+    .student-id { margin-top: 2px; color: #97a19c; font-size: 9px; }
+    .status-select { min-width: 112px; height: 29px; padding: 0 8px; border: 1px solid var(--line); border-radius: 6px; background: white; color: #61706a; font-size: 10px; }
+    .status-select.present { border-color: #d7eade; background: #f1f8f3; color: #397359; }
+    .status-select.absent { border-color: #f0dada; background: #fcf3f2; color: #a65252; }
+    .status-select.late { border-color: #f2e3d3; background: #fdf7f0; color: #a76b35; }
+    .muted-cell { color: #9aa49f; }
+    .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 20px; font-size: 9px; font-weight: 700; }
+    .badge.present { background: var(--green-soft); color: #397359; }
+    .badge.absent { background: var(--red-soft); color: #a65252; }
+    .badge.late { background: var(--orange-soft); color: #a76b35; }
+    .badge.unmarked { background: #f1f3f2; color: #7d8983; }
+    .row-actions { display: flex; align-items: center; gap: 4px; }
+    .row-actions .button { min-height: 28px; padding: 0 7px; font-size: 9px; }
+    .warning-panel { display: flex; align-items: flex-start; gap: 11px; margin: 0 0 17px; padding: 12px 14px; border: 1px solid #f0e2c6; border-radius: 9px; background: #fffaf0; }
+    .warning-symbol { display: grid; width: 25px; height: 25px; flex: none; place-items: center; border-radius: 8px; background: #f7e9c9; color: #9b6c23; font-weight: 800; }
+    .warning-copy strong { display: block; margin-bottom: 2px; color: #75551f; font-size: 11px; }
+    .warning-copy span { color: #806b49; font-size: 10px; }
+    .table-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 16px; border-top: 1px solid #edf1ee; color: #9aa49f; font-size: 10px; }
+    .empty-state { padding: 35px 16px; color: #899590; text-align: center; font-size: 11px; }
+    .empty-state strong { display: block; margin-bottom: 4px; color: #44534e; font-size: 12px; }
+    .student-layout { display: grid; grid-template-columns: minmax(0, 1fr) 285px; gap: 15px; align-items: start; }
+    .form-card { padding: 17px; }
+    .form-card h2 { margin: 0; font-size: 13px; }
+    .form-card > p { margin: 5px 0 15px; color: var(--muted); font-size: 10px; }
+    .form-card .field { margin-bottom: 11px; }
+    .form-card .field input { height: 37px; }
+    .form-card .button { width: 100%; margin-top: 2px; }
+    .tip-card { margin-top: 12px; padding: 13px; border: 1px solid #e8eee9; border-radius: 9px; background: #fafcfb; color: #87928c; font-size: 10px; line-height: 1.6; }
+    .report-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 11px; margin-bottom: 15px; }
+    .toolbar select, .toolbar input { min-width: 150px; height: 39px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--ink); font-size: 11px; }
+    #student-subjects .report-summary { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin: 0; padding: 12px; }
+    .report-stat { padding: 13px 15px; border: 1px solid var(--line); border-radius: 9px; background: white; }
+    .report-stat span { display: block; color: var(--muted); font-size: 10px; }
+    .report-stat strong { display: block; margin-top: 4px; font-size: 20px; letter-spacing: -.4px; }
+    .report-rate { color: var(--green-dark); }
+    .history-list { display: grid; gap: 7px; padding: 12px 16px; }
+    .history-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f3f1; color: #63716b; font-size: 10px; }
+    .history-row:last-child { border-bottom: 0; }
+    .toast { position: fixed; right: 20px; bottom: 20px; z-index: 5; max-width: min(360px, calc(100vw - 32px)); padding: 10px 14px; border: 1px solid #dce8df; border-radius: 9px; background: white; box-shadow: 0 8px 24px rgba(27,54,43,.13); color: #375e4c; font-size: 11px; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .18s, transform .18s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 980px) {
+      .sidebar { width: 205px; }
+      .main { width: calc(100% - 205px); margin-left: 205px; }
+      .topbar { padding: 0 23px; }
+      .content { padding: 27px 23px 42px; }
+      .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .student-layout { grid-template-columns: minmax(0, 1fr) 245px; }
+    }
+    @media (max-width: 700px) {
+      .login-shell { padding: 12px; }
+      .login-card { grid-template-columns: 1fr; }
+      .login-story { min-height: 190px; padding: 22px; }
+      .story-copy { margin: 25px 0 3px; }
+      .story-copy h1 { font-size: 28px; }
+      .story-copy p, .story-footer { display: none; }
+      .login-content { padding: 24px; }
+      .sidebar { width: 62px; align-items: center; padding: 17px 6px; }
+      .sidebar .brand { padding: 0; }
+      .sidebar .brand-copy, .nav-label, .nav-button .nav-text, .local-note, .sidebar-bottom { display: none; }
+      .nav { width: 100%; margin-top: 27px; }
+      .nav-button { justify-content: center; padding: 11px 0; }
+      .main { width: calc(100% - 62px); margin-left: 62px; }
+      .topbar { min-height: 58px; padding: 0 13px; }
+      .topbar-actions { gap: 7px; }
+      .topbar-actions .button { min-height: 34px; padding: 0 9px; font-size: 10px; }
+      .today-label { display: none; }
+      .content { padding: 22px 13px 34px; }
+      .page-heading { align-items: flex-start; flex-direction: column; margin-bottom: 17px; }
+      .page-heading .toolbar { width: 100%; }
+      .toolbar .date-control { flex: 1; }
+      .toolbar .date-control input { width: 100%; }
+      .stat-grid { gap: 8px; margin-bottom: 11px; }
+      .stat-card { min-height: 101px; padding: 11px; }
+      .stat-value { font-size: 23px; }
+      .panel-heading { align-items: flex-start; flex-direction: column; }
+      .panel-actions, .search { width: 100%; }
+      .student-layout { grid-template-columns: 1fr; }
+      .report-summary { gap: 6px; }
+      .report-stat { padding: 10px; }
+      .report-stat strong { font-size: 17px; }
+      .table-footer { align-items: flex-start; flex-direction: column; }
+    }
+    @media (max-width: 390px) {
+      .avatar { display: none; }
+      .stat-label { font-size: 9px; }
+      .stat-foot { font-size: 9px; }
+      .login-content { padding: 21px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="login-shell" id="login-screen">
+    <div class="login-card">
+      <section class="login-story" aria-label="Classroom introduction">
+        <div class="brand"><div class="brand-mark" aria-hidden="true">✓</div><div><div class="brand-name">Campus</div><div class="brand-caption">University attendance</div></div></div>
+        <div class="story-copy">
+          <div class="story-eyebrow">A BETTER CLASS CHECK-IN</div>
+          <h1>Attendance,<br>made thoughtful.</h1>
+          <p>Subject-wise attendance for university classes, sessions and semesters.</p>
+        </div>
+        <div class="story-footer">Configurable academic structure · VTU-style starting point</div>
+      </section>
+      <section class="login-content" aria-labelledby="login-title">
+        <h2 id="login-title">Welcome</h2>
+        <p class="login-intro">Choose your account type to continue.</p>
+        <div class="role-switch" role="tablist" aria-label="Account type">
+          <button type="button" class="role-tab active" id="teacher-tab" role="tab" aria-selected="true">Teacher</button>
+          <button type="button" class="role-tab" id="student-tab" role="tab" aria-selected="false">Student</button>
+        </div>
+        <form class="login-form" id="teacher-login-form">
+          <div class="field"><label for="teacher-login-id">Teacher account</label><input id="teacher-login-id" autocomplete="username" required placeholder="Email or account ID"></div>
+          <div class="field"><label for="teacher-password">Password</label><input id="teacher-password" type="password" autocomplete="current-password" required></div>
+          <button class="button button-primary" type="submit">Sign in as teacher</button>
+          <p class="login-message" id="teacher-login-message" role="status" aria-live="polite"></p>
+        </form>
+        <form class="login-form" id="teacher-setup-form" hidden>
+          <div class="field"><label for="teacher-new-name">Teacher name</label><input id="teacher-new-name" required autocomplete="name"></div>
+          <div class="field"><label for="teacher-new-id">Teacher account ID</label><input id="teacher-new-id" required autocomplete="username"></div>
+          <div class="field"><label for="teacher-new-password">Password (8+ characters)</label><input id="teacher-new-password" type="password" minlength="8" autocomplete="new-password" required></div>
+          <div class="field"><label for="teacher-confirm-password">Confirm password</label><input id="teacher-confirm-password" type="password" minlength="8" autocomplete="new-password" required></div>
+          <button class="button button-primary" type="submit">Create first teacher account</button>
+          <p class="login-message" id="teacher-setup-message" role="status" aria-live="polite">Set up the initial teacher account for this local demo.</p>
+        </form>
+        <form class="login-form" id="student-login-form" hidden>
+          <div class="field"><label for="student-login-id">Student ID</label><input id="student-login-id" autocomplete="username" required></div>
+          <div class="field"><label for="student-login-pin">Student PIN</label><input id="student-login-pin" type="password" inputmode="numeric" autocomplete="current-password" required></div>
+          <button class="button button-primary" type="submit">Sign in as student</button>
+          <p class="login-message" id="student-login-message" role="status" aria-live="polite">Use the ID and PIN provided by your teacher.</p>
+        </form>
+        <div class="privacy-note"><strong>Local demo only.</strong> Data and password hashes are in this browser, not shared or securely authenticated. Do not use real student records. Secure multi-user use requires a server-side backend with role authorization.</div>
+      </section>
+    </div>
+  </main>
+
+  <div class="app" id="teacher-app" hidden>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">✓</div>
+        <div class="brand-copy"><div class="brand-name">Campus</div><div class="brand-caption">Attendance workspace</div></div>
+      </div>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="nav" aria-label="Teacher navigation">
+        <button class="nav-button active" data-page="dashboard" aria-current="page"><span class="nav-icon" aria-hidden="true">▦</span><span class="nav-text">Overview</span></button>
+        <button class="nav-button" data-page="setup"><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-text">Subjects &amp; setup</span></button>
+        <button class="nav-button" data-page="students"><span class="nav-icon" aria-hidden="true">♙</span><span class="nav-text">Students</span></button>
+        <button class="nav-button" data-page="reports"><span class="nav-icon" aria-hidden="true">◷</span><span class="nav-text">History &amp; reports</span></button>
+      </nav>
+      <div class="sidebar-bottom"><div class="local-note"><strong><i class="local-dot"></i>Local demo data</strong>Stored only in this browser.</div></div>
+    </aside>
+    <section class="main">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span aria-hidden="true"> / </span> <strong id="breadcrumb-page">Overview</strong></div>
+        <div class="topbar-actions"><span class="today-label" id="top-date"></span><span id="teacher-name"></span><button class="button button-secondary" id="teacher-signout">Sign out</button></div>
+      </header>
+      <div class="content">
+        <section class="page active" id="page-dashboard" aria-labelledby="dashboard-title">
+          <div class="page-heading"><div><div class="eyebrow">SUBJECT SESSIONS</div><h1 id="dashboard-title">Teacher dashboard</h1><p class="subtitle">Start a class session, then mark the enrolled students.</p></div></div>
+          <section class="panel form-card" style="margin-bottom:15px">
+            <h2>Start attendance session</h2><p>Each class period is a separate session, including repeat classes on the same day.</p>
+            <form id="session-form">
+              <div class="field"><label for="session-assignment">Assigned subject &amp; section</label><select id="session-assignment" required></select></div>
+              <div class="field"><label for="session-date">Class date</label><input id="session-date" type="date" required></div>
+              <div class="field"><label for="session-period">Period / session label</label><input id="session-period" maxlength="40" required placeholder="e.g. Period 2"></div>
+              <div class="field"><label for="session-time">Start time (optional)</label><input id="session-time" type="time"></div>
+              <button class="button button-primary" type="submit">Start new session</button>
+            </form>
+          </section>
+          <section class="panel"><div class="panel-heading"><div><h2 class="panel-title">Your sessions</h2><div class="panel-subtitle">Only assigned subjects and sections are shown.</div></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Date / period</th><th>Subject</th><th>Section</th><th>Marked</th><th>Attendance</th><th>Action</th></tr></thead><tbody id="session-rows"></tbody></table><div class="empty-state" id="session-empty"><strong>No sessions yet</strong>Add a subject and section, assign them to your teacher account, then start a session.</div></div>
+          </section>
+          <section class="panel" id="marking-panel" hidden style="margin-top:15px">
+            <div class="panel-heading"><div><h2 class="panel-title" id="marking-title">Session attendance</h2><div class="panel-subtitle" id="marking-subtitle"></div></div><span class="badge unmarked">Edits save on this device</span></div>
+            <div class="table-wrap"><table><thead><tr><th>Student</th><th>Student ID</th><th>Status</th></tr></thead><tbody id="attendance-rows"></tbody></table><div class="empty-state" id="attendance-empty"><strong>No enrolled students</strong>Enroll students in this session's section first.</div></div>
+          </section>
+        </section>
+
+        <section class="page" id="page-setup" aria-labelledby="setup-title">
+          <div class="page-heading"><div><div class="eyebrow">CONFIGURABLE ACADEMIC STRUCTURE</div><h1 id="setup-title">Subjects &amp; setup</h1><p class="subtitle">Configure academic year, semester, program, section and subjects for your institution.</p></div></div>
+          <div class="student-layout"><div>
+            <form class="panel form-card" id="section-form"><h2>Add semester / section</h2><p>No VTU scheme or subject list is hard-coded.</p>
+              <div class="field"><label for="academic-year">Academic year</label><input id="academic-year" required placeholder="2026-27"></div>
+              <div class="field"><label for="semester">Semester</label><input id="semester" required placeholder="e.g. 3"></div>
+              <div class="field"><label for="branch">Branch / program</label><input id="branch" required placeholder="e.g. Information Science"></div>
+              <div class="field"><label for="section-name">Section</label><input id="section-name" required placeholder="e.g. A"></div><button class="button button-primary" type="submit">Add section</button>
+            </form>
+            <form class="panel form-card" id="threshold-form" style="margin-top:13px"><h2>Attendance minimum</h2><p>Used for below-threshold student alerts.</p><div class="field"><label for="threshold-input">Minimum attendance (%)</label><input id="threshold-input" type="number" min="1" max="100" step="1" required value="75"></div><button class="button button-secondary" type="submit">Save minimum</button></form>
+            <form class="panel form-card" id="subject-form" style="margin-top:13px"><h2>Add subject</h2><div class="field"><label for="subject-section">Semester / program / section</label><select id="subject-section" required></select></div>
+              <div class="field"><label for="subject-code">Subject code</label><input id="subject-code" required maxlength="30" placeholder="e.g. 22CS34"></div>
+              <div class="field"><label for="subject-name">Subject name</label><input id="subject-name" required maxlength="100"></div>
+              <div class="field"><label for="subject-credits">Credits</label><input id="subject-credits" type="number" min="0" max="30" step="0.5" required value="3"></div><button class="button button-primary" type="submit">Add subject</button>
+            </form>
+            <form class="panel form-card" id="assignment-form" style="margin-top:13px"><h2>Assign teacher</h2><div class="field"><label for="assignment-teacher">Teacher account</label><select id="assignment-teacher" required></select></div><div class="field"><label for="assignment-subject">Subject &amp; section</label><select id="assignment-subject" required></select></div><button class="button button-primary" type="submit">Assign subject &amp; section</button></form>
+          </div><div>
+            <form class="panel form-card" id="teacher-form"><h2>Create teacher account</h2><p>New accounts have no subject access until assigned.</p><div class="field"><label for="new-teacher-name">Teacher name</label><input id="new-teacher-name" required></div><div class="field"><label for="new-teacher-id">Account ID</label><input id="new-teacher-id" required></div><div class="field"><label for="new-teacher-password">Password (8+ characters)</label><input id="new-teacher-password" type="password" minlength="8" required></div><button class="button button-primary" type="submit">Create teacher</button></form>
+            <div class="tip-card" id="legacy-migration-card"><strong>Legacy file migration</strong><br>Import the old attendance-data.txt file to preserve the old student list and date records. Each imported date becomes a distinct session for the imported subject. <button class="button button-secondary" id="legacy-import-button" type="button">Import legacy data</button><input id="legacy-file" type="file" accept=".txt,text/plain" hidden></div>
+            <div class="tip-card" id="backup-card"><strong>Private backup</strong><br>Downloads university structure and attendance data without password hashes. Keep the file private. <button class="button button-secondary" id="backup-button" type="button">Download data backup</button></div>
+            <div class="panel" style="margin-top:13px"><div class="panel-heading"><div><h2 class="panel-title">Academic sections</h2></div></div><div id="section-list" class="history-list"></div><div id="section-empty" class="empty-state"><strong>No sections configured</strong>Add year, semester, branch and section.</div></div>
+            <div class="panel" style="margin-top:13px"><div class="panel-heading"><div><h2 class="panel-title">Subjects and assignments</h2></div></div><div id="subject-list" class="history-list"></div><div id="subject-empty" class="empty-state"><strong>No subjects configured</strong>Add a subject and assign it to a teacher.</div></div>
+          </div></div>
+        </section>
+
+        <section class="page" id="page-students" aria-labelledby="students-title">
+          <div class="page-heading"><div><div class="eyebrow">ENROLLMENT</div><h1 id="students-title">Students</h1><p class="subtitle">Enroll each student in a semester section.</p></div></div>
+          <div class="student-layout">
+            <section class="panel">
+              <div class="panel-heading"><div><h2 class="panel-title">Enrolled students</h2></div><label class="search"><span aria-hidden="true">⌕</span><input id="roster-search" type="search" placeholder="Search students…" aria-label="Search students"></label></div>
+              <div class="table-wrap"><table><thead><tr><th>Student</th><th>Student ID</th><th>Semester / section</th><th>Access</th></tr></thead><tbody id="roster-rows"></tbody></table><div class="empty-state" id="roster-empty"><strong>No students enrolled</strong>Add a student and choose their section.</div></div>
+              <div class="table-footer"><span id="roster-count">0 students</span><span>Local class list</span></div>
+            </section>
+            <div>
+              <form class="panel form-card" id="student-form">
+                <h2>Add student</h2><p>Give the student their PIN privately.</p>
+                <div class="field"><label for="student-id">Student ID</label><input id="student-id" name="id" maxlength="80" required placeholder="e.g. STU-104" autocomplete="off"></div>
+                <div class="field"><label for="student-name">Full name</label><input id="student-name" name="name" maxlength="100" required placeholder="e.g. Alex Morgan" autocomplete="name"></div>
+                <div class="field"><label for="student-section">Semester / section</label><select id="student-section" required></select></div>
+                <div class="field"><label for="student-pin">Student PIN (4–8 digits)</label><input id="student-pin" name="pin" type="password" inputmode="numeric" minlength="4" maxlength="8" required placeholder="Create a student PIN"></div>
+                <button class="button button-primary" type="submit">Enroll student</button>
+              </form>
+              <div class="tip-card"><strong>Attendance minimum is configurable</strong><br>The local administrator sets the threshold in Subjects &amp; setup. Present and late count as attended.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="page-reports" aria-labelledby="reports-title">
+          <div class="page-heading"><div><div class="eyebrow">SUBJECT-WISE HISTORY</div><h1 id="reports-title">History &amp; reports</h1><p class="subtitle">Review sessions by subject, section, date and student.</p></div></div>
+          <div class="toolbar" style="margin-bottom:14px"><select id="report-assignment" aria-label="Filter subject and section"></select><input id="report-date" type="date" aria-label="Filter date"><input id="report-student" type="search" placeholder="Filter student ID or name"><button class="button button-secondary" id="report-export" type="button">Export CSV</button></div>
+          <div class="report-summary">
+            <div class="report-stat"><span>Sessions</span><strong id="report-session-count">0</strong></div>
+            <div class="report-stat"><span>Present</span><strong id="report-present-count">0</strong></div>
+            <div class="report-stat"><span>Absent</span><strong id="report-absent-count">0</strong></div>
+            <div class="report-stat"><span>Late</span><strong id="report-late-count">0</strong></div>
+            <div class="report-stat"><span>Attendance rate</span><strong class="report-rate" id="report-rate">—</strong></div>
+          </div>
+          <section class="panel"><div class="table-wrap"><table><thead><tr><th>Date / period</th><th>Subject</th><th>Section</th><th>Student</th><th>Status</th></tr></thead><tbody id="report-rows"></tbody></table><div class="empty-state" id="report-empty"><strong>No matching attendance history</strong>Choose a subject, or start a class session and mark attendance.</div></div></section>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <main class="login-shell" id="student-app" hidden>
+    <section class="panel" style="width:min(1100px,100%);padding:24px">
+      <header class="page-heading">
+        <div><div class="eyebrow">STUDENT PORTAL · CURRENT ENROLLMENTS</div><h1 id="student-greeting">Your attendance</h1><p class="subtitle">Your personal attendance by enrolled subject and session.</p></div>
+        <button class="button button-secondary" id="student-signout">Sign out</button>
+      </header>
+      <div class="report-summary">
+        <div class="report-stat"><span>Subjects enrolled</span><strong id="student-subject-count">0</strong></div>
+        <div class="report-stat"><span>Overall attendance</span><strong class="report-rate" id="student-rate">—</strong></div>
+        <div class="report-stat"><span>Minimum target</span><strong id="student-threshold">75%</strong></div>
+      </div>
+      <div id="student-subjects"></div><div class="empty-state" id="student-empty"><strong>No subjects for this semester yet</strong>Ask your teacher to enroll you in a section and add its subjects.</div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  
+  <script>
+    (() => {
+      "use strict";
+      const DATA_KEY = "campus-attendance-v2";
+      const OLD_DATA_KEY = "classroom-attendance-v1";
+      const AUTH_KEY = "classroom-attendance-auth-v1";
+      const THRESHOLD_DEFAULT = 75;
+      const HASH_ITERATIONS = 120000;
+      const STATUSES = ["PRESENT", "ABSENT", "LATE"];
+      const $ = id => document.getElementById(id);
+      const today = new Date();
+      const todayString = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      let data = emptyData();
+      let auth = { teachers: Object.create(null), students: Object.create(null) };
+      let teacher = null;
+      let student = null;
+      let activeSessionId = "";
+      let toastTimer;
+
+      function emptyData() {
+        return { threshold: THRESHOLD_DEFAULT, sections: [], subjects: [], students: [], teachers: [], assignments: [], sessions: [], attendance: [] };
+      }
+      const id = prefix => `${prefix}-${crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)}`;
+      const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+      const prettyDate = value => new Date(value + "T12:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+      const toast = message => {
+        $("toast").textContent = message;
+        $("toast").classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2800);
+      };
+      const setMessage = (node, text, kind) => {
+        node.textContent = text;
+        node.className = "login-message" + (kind ? " " + kind : "");
+      };
+      const persist = () => {
+        try {
+          localStorage.setItem(DATA_KEY, JSON.stringify(data));
+          localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+          return true;
+        } catch (error) {
+          toast(`Could not save this demo on this device: ${error.message}`);
+          return false;
+        }
+      };
+      const byId = (collection, key) => collection.find(item => item.id === key);
+      const sectionLabel = section => `${section.year} · Sem ${section.semester} · ${section.branch} · Sec ${section.name}`;
+      const pairLabel = pair => {
+        const subject = byId(data.subjects, pair.subjectId);
+        const section = byId(data.sections, pair.sectionId);
+        return subject && section ? `${subject.code} · ${subject.name} — ${sectionLabel(section)}` : "Unavailable assignment";
+      };
+      const assignmentsForTeacher = current => current && current.admin
+        ? data.assignments : data.assignments.filter(item => item.teacherId === (current && current.id));
+      const eligibleSections = () => teacher && !teacher.admin
+        ? data.sections.filter(section => assignmentsForTeacher(teacher).some(a => a.sectionId === section.id))
+        : data.sections;
+      const eligibleStudents = sectionId => data.students.filter(item => item.sectionId === sectionId);
+      const assignmentPair = assignment => `${assignment.subjectId}:${assignment.sectionId}`;
+      const attendanceFor = (sessionId, studentId) =>
+        data.attendance.find(record => record.sessionId === sessionId && record.studentId === studentId);
+      const sessionStatus = (sessionId, studentId) => {
+        const record = attendanceFor(sessionId, studentId);
+        return record && STATUSES.includes(record.status) ? record.status : "";
+      };
+      const saveStatus = (session, studentId, status) => {
+        if (!session || (session.teacherId !== teacher.id && !teacher.admin)) throw new Error("You are not authorized to edit this session.");
+        if (!teacher.admin && !assignmentsForTeacher(teacher).some(item =>
+          item.subjectId === session.subjectId && item.sectionId === session.sectionId))
+          throw new Error("This subject is not assigned to your account.");
+        if (!eligibleStudents(session.sectionId).some(item => item.id === studentId)) throw new Error("Student is not enrolled in this session's section.");
+        const previous = data.attendance.map(record => ({ ...record }));
+        const existing = attendanceFor(session.id, studentId);
+        if (!status) {
+          if (existing) data.attendance = data.attendance.filter(record => record !== existing);
+        } else if (existing) {
+          existing.status = status;
+        } else {
+          data.attendance.push({ id: id("att"), sessionId: session.id, studentId, status, updatedAt: new Date().toISOString() });
+        }
+        if (!persist()) {
+          data.attendance = previous;
+          throw new Error("Attendance was not saved.");
+        }
+      };
+      const statusBadge = status => `<span class="badge ${status ? status.toLowerCase() : "unmarked"}">${status ? escapeHtml(status[0] + status.slice(1).toLowerCase()) : "Not marked"}</span>`;
+      const identity = item => `<div class="student-cell"><span class="student-avatar">${escapeHtml(item.name.split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase())}</span><span><span class="student-name">${escapeHtml(item.name)}</span><span class="student-id">${escapeHtml(item.id)}</span></span></div>`;
+      const renderSelect = (select, options, placeholder) => {
+        const previous = select.value;
+        select.innerHTML = `<option value="">${escapeHtml(placeholder)}</option>` + options.map(option =>
+          `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`).join("");
+        if (options.some(option => option.value === previous)) select.value = previous;
+      };
+      const assignmentFromValue = value => data.assignments.find(item => assignmentPair(item) === value);
+      const updateSetupControls = () => {
+        renderSelect($("subject-section"), eligibleSections().map(section => ({ value: section.id, label: sectionLabel(section) })), "Choose a section");
+        renderSelect($("student-section"), eligibleSections().map(section => ({ value: section.id, label: sectionLabel(section) })), "Choose a section");
+        const manageableTeachers = teacher && teacher.admin ? data.teachers
+          : data.teachers.filter(item => item.id === (teacher && teacher.id));
+        renderSelect($("assignment-teacher"), manageableTeachers.map(item => ({ value: item.id, label: `${item.name} (${item.id})` })), "Choose a teacher");
+        const allowedSectionIds = new Set(eligibleSections().map(section => section.id));
+        const allowedPairs = new Set(assignmentsForTeacher(teacher).map(assignmentPair));
+        const allPairs = data.subjects.filter(subject => allowedSectionIds.has(subject.sectionId)
+          && (teacher && teacher.admin || allowedPairs.has(`${subject.id}:${subject.sectionId}`))).map(subject => {
+          const section = byId(data.sections, subject.sectionId);
+          return section ? { value: `${subject.id}:${section.id}`, label: `${subject.code} · ${subject.name} — ${sectionLabel(section)}` } : null;
+        }).filter(Boolean);
+        renderSelect($("assignment-subject"), allPairs, "Choose subject and section");
+        const assignedPairs = assignmentsForTeacher(teacher);
+        renderSelect($("session-assignment"), assignedPairs.map(item => ({ value: assignmentPair(item), label: pairLabel(item) })), "Choose assigned subject");
+        renderSelect($("report-assignment"), assignedPairs.map(item => ({ value: assignmentPair(item), label: pairLabel(item) })), "All assigned subjects");
+      };
+      const renderSetup = () => {
+        const isAdmin = Boolean(teacher && teacher.admin);
+        $("threshold-input").value = String(data.threshold);
+        ["section-form", "subject-form", "teacher-form", "assignment-form", "threshold-form"].forEach(idName => {
+          $(idName).hidden = !isAdmin;
+        });
+        $("legacy-migration-card").hidden = !isAdmin;
+        $("backup-card").hidden = !isAdmin;
+        $("section-list").innerHTML = eligibleSections().map(section =>
+          `<div class="history-row"><span>${escapeHtml(sectionLabel(section))} · ${data.students.filter(s => s.sectionId === section.id).length} students</span>${isAdmin ? `<span class="row-actions"><button class="button button-quiet" data-edit-section="${escapeHtml(section.id)}">Edit</button><button class="button button-quiet" data-remove-section="${escapeHtml(section.id)}">Remove</button></span>` : ""}</div>`).join("");
+        $("section-empty").hidden = eligibleSections().length > 0;
+        const assignedPairs = new Set(assignmentsForTeacher(teacher).map(assignmentPair));
+        const subjects = data.subjects.filter(subject => eligibleSections().some(section => section.id === subject.sectionId)
+          && (isAdmin || assignedPairs.has(`${subject.id}:${subject.sectionId}`)));
+        $("subject-list").innerHTML = subjects.map(subject => {
+          const section = byId(data.sections, subject.sectionId);
+          const assignments = data.assignments.filter(a => a.subjectId === subject.id);
+          const teacherNames = assignments.map(a => byId(data.teachers, a.teacherId)).filter(Boolean).map(t => t.name);
+          const assignmentActions = assignments.map(assignment => {
+            const assignedTeacher = byId(data.teachers, assignment.teacherId);
+            return `<div>${escapeHtml(assignedTeacher ? assignedTeacher.name : "Unknown teacher")}${isAdmin ? ` <button class="button button-quiet" data-remove-assignment="${escapeHtml(assignment.id)}">Unassign</button>` : ""}</div>`;
+          }).join("");
+          return `<div class="history-row"><span><strong>${escapeHtml(subject.code)}</strong> · ${escapeHtml(subject.name)} · ${subject.credits} credits<br>${escapeHtml(section ? sectionLabel(section) : "")}</span><span>${assignmentActions || escapeHtml(teacherNames.join(", ") || "Unassigned")} ${isAdmin ? `<button class="button button-quiet" data-edit-subject="${escapeHtml(subject.id)}">Edit</button><button class="button button-quiet" data-remove-subject="${escapeHtml(subject.id)}">Remove</button>` : ""}</span></div>`;
+        }).join("");
+        $("subject-empty").hidden = subjects.length > 0;
+        updateSetupControls();
+      };
+      const visibleSessions = () => {
+        return data.sessions.filter(session => {
+          const allowed = Boolean(teacher) && (teacher.admin || assignmentsForTeacher(teacher)
+            .some(item => item.subjectId === session.subjectId && item.sectionId === session.sectionId));
+          return allowed;
+        }).sort((a, b) => b.date.localeCompare(a.date) || (b.time || "").localeCompare(a.time || "") || b.period.localeCompare(a.period));
+      };
+      const renderSessionTable = () => {
+        const sessions = visibleSessions();
+        $("session-rows").innerHTML = sessions.map(session => {
+          const subject = byId(data.subjects, session.subjectId);
+          const section = byId(data.sections, session.sectionId);
+          const students = eligibleStudents(session.sectionId);
+          const records = data.attendance.filter(record => record.sessionId === session.id && STATUSES.includes(record.status));
+          const attended = records.filter(record => record.status === "PRESENT" || record.status === "LATE").length;
+          const rate = students.length ? Math.round(attended / students.length * 100) : null;
+          const editAllowed = teacher.admin || session.teacherId === teacher.id;
+          return `<tr><td>${escapeHtml(prettyDate(session.date))}<br><span class="muted-cell">${escapeHtml(session.period)}${session.time ? " · " + escapeHtml(session.time) : ""}</span></td><td>${escapeHtml(subject ? `${subject.code} · ${subject.name}` : "Unknown")}</td><td>${escapeHtml(section ? sectionLabel(section) : "Unknown")}</td><td>${records.length} / ${students.length}</td><td>${rate === null ? "—" : rate + "%"}</td><td><button class="button button-secondary" data-review="${escapeHtml(session.id)}" ${editAllowed ? "" : "disabled"}>Review / mark</button></td></tr>`;
+        }).join("");
+        $("session-empty").hidden = sessions.length > 0;
+      };
+      const renderMarking = () => {
+        const session = byId(data.sessions, activeSessionId);
+        const authorized = session && teacher && (teacher.admin || (
+          session.teacherId === teacher.id && assignmentsForTeacher(teacher).some(item =>
+            item.subjectId === session.subjectId && item.sectionId === session.sectionId)));
+        if (!authorized) { $("marking-panel").hidden = true; return; }
+        const subject = byId(data.subjects, session.subjectId);
+        const section = byId(data.sections, session.sectionId);
+        $("marking-panel").hidden = false;
+        $("marking-title").textContent = `${subject ? subject.code + " · " + subject.name : "Session"} attendance`;
+        $("marking-subtitle").textContent = `${prettyDate(session.date)} · ${session.period}${session.time ? " · " + session.time : ""} · ${section ? sectionLabel(section) : ""}`;
+        const students = eligibleStudents(session.sectionId);
+        $("attendance-rows").innerHTML = students.map(person => {
+          const status = sessionStatus(session.id, person.id);
+          return `<tr><td>${identity(person)}</td><td class="muted-cell">${escapeHtml(person.id)}</td><td><select class="status-select ${status.toLowerCase()}" data-student="${escapeHtml(person.id)}" aria-label="Status for ${escapeHtml(person.name)}"><option value="">Not marked</option>${STATUSES.map(value => `<option value="${value}" ${value === status ? "selected" : ""}>${value[0] + value.slice(1).toLowerCase()}</option>`).join("")}</select></td></tr>`;
+        }).join("");
+        $("attendance-empty").hidden = students.length > 0;
+      };
+      const renderRoster = () => {
+        const query = $("roster-search").value.trim().toLowerCase();
+        const sections = eligibleSections();
+        const roster = data.students.filter(person => sections.some(section => section.id === person.sectionId)
+          && `${person.name} ${person.id}`.toLowerCase().includes(query));
+        $("roster-rows").innerHTML = roster.map(person => {
+          const section = byId(data.sections, person.sectionId);
+          return `<tr><td>${identity(person)}</td><td>${escapeHtml(person.id)}</td><td>${escapeHtml(section ? sectionLabel(section) : "")}</td><td><button class="button button-quiet" data-reset-pin="${escapeHtml(person.id)}">Set / reset PIN</button></td></tr>`;
+        }).join("");
+        $("roster-empty").hidden = roster.length > 0;
+      };
+      const renderReports = () => {
+        const selectedPair = $("report-assignment").value;
+        const selectedDate = $("report-date").value;
+        const query = $("report-student").value.trim().toLowerCase();
+        const sessions = visibleSessions().filter(session => (!selectedPair || assignmentPair(session) === selectedPair)
+          && (!selectedDate || session.date === selectedDate));
+        const rows = [];
+        const totals = { PRESENT: 0, ABSENT: 0, LATE: 0, attended: 0, eligible: 0 };
+        sessions.forEach(session => {
+          const subject = byId(data.subjects, session.subjectId);
+          const section = byId(data.sections, session.sectionId);
+          eligibleStudents(session.sectionId).filter(person =>
+            !query || `${person.name} ${person.id}`.toLowerCase().includes(query)).forEach(person => {
+            totals.eligible++;
+            const status = sessionStatus(session.id, person.id);
+            if (STATUSES.includes(status)) totals[status]++;
+            if (status === "PRESENT" || status === "LATE") totals.attended++;
+            rows.push(`<tr><td>${escapeHtml(prettyDate(session.date))}<br><span class="muted-cell">${escapeHtml(session.period)}${session.time ? " · " + escapeHtml(session.time) : ""}</span></td><td>${escapeHtml(subject ? subject.code + " · " + subject.name : "")}</td><td>${escapeHtml(section ? sectionLabel(section) : "")}</td><td>${identity(person)}</td><td>${statusBadge(status)}</td></tr>`);
+          });
+        });
+        $("report-session-count").textContent = sessions.length;
+        $("report-present-count").textContent = totals.PRESENT;
+        $("report-absent-count").textContent = totals.ABSENT;
+        $("report-late-count").textContent = totals.LATE;
+        $("report-rate").textContent = totals.eligible ? `${Math.round(totals.attended / totals.eligible * 100)}%` : "—";
+        $("report-rows").innerHTML = rows.join("");
+        $("report-empty").hidden = rows.length > 0;
+      };
+      const download = (name, contents, type) => {
+        const url = URL.createObjectURL(new Blob([contents], { type }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = name;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      };
+      const exportReportCsv = () => {
+        const quote = value => `"${String(value).replace(/"/g, '""')}"`;
+        const rows = [["Date", "Period", "Start time", "Subject code", "Subject name", "Academic year",
+          "Semester", "Branch", "Section", "Student ID", "Student name", "Status"]];
+        const selectedPair = $("report-assignment").value;
+        const selectedDate = $("report-date").value;
+        const query = $("report-student").value.trim().toLowerCase();
+        visibleSessions().filter(session => (!selectedPair || assignmentPair(session) === selectedPair)
+          && (!selectedDate || session.date === selectedDate)).forEach(session => {
+          const subject = byId(data.subjects, session.subjectId);
+          const section = byId(data.sections, session.sectionId);
+          eligibleStudents(session.sectionId).filter(person => !query
+            || `${person.name} ${person.id}`.toLowerCase().includes(query)).forEach(person => {
+            rows.push([session.date, session.period, session.time || "", subject.code, subject.name,
+              section.year, section.semester, section.branch, section.name, person.id, person.name,
+              sessionStatus(session.id, person.id) || "NOT MARKED"]);
+          });
+        });
+        if (rows.length === 1) { toast("No matching records to export."); return; }
+        download("university-attendance-report.csv",
+          rows.map(row => row.map(quote).join(",")).join("\r\n"), "text/csv;charset=utf-8");
+        toast("Filtered attendance report exported.");
+      };
+      const renderStudentPortal = () => {
+        if (!student) return;
+        $("student-greeting").textContent = `Hello, ${student.name}`;
+        const section = byId(data.sections, student.sectionId);
+        const subjects = data.subjects.filter(item => item.sectionId === student.sectionId);
+        let totalHeld = 0;
+        let totalAttended = 0;
+        $("student-subject-count").textContent = subjects.length;
+        $("student-subjects").innerHTML = subjects.map(subject => {
+          const sessions = data.sessions.filter(item => item.subjectId === subject.id && item.sectionId === student.sectionId)
+            .sort((a, b) => b.date.localeCompare(a.date) || (b.time || "").localeCompare(a.time || ""));
+          const records = sessions.map(session => ({ session, status: sessionStatus(session.id, student.id) }));
+          const present = records.filter(item => item.status === "PRESENT").length;
+          const late = records.filter(item => item.status === "LATE").length;
+          const absent = records.filter(item => item.status === "ABSENT").length;
+          const attended = present + late;
+          const unmarked = sessions.length - present - late - absent;
+          const rate = sessions.length ? Math.round(attended / sessions.length * 100) : null;
+          totalHeld += sessions.length;
+          totalAttended += attended;
+          const alert = rate !== null && rate < data.threshold
+            ? `<span class="badge absent">Below ${data.threshold}% minimum</span>` : "";
+          const history = records.map(item => `<tr><td>${escapeHtml(prettyDate(item.session.date))}</td><td>${escapeHtml(item.session.period)}${item.session.time ? " · " + escapeHtml(item.session.time) : ""}</td><td>${statusBadge(item.status)}</td></tr>`).join("");
+          return `<section class="panel" style="margin:12px 0"><div class="panel-heading"><div><h2 class="panel-title">${escapeHtml(subject.code)} · ${escapeHtml(subject.name)}</h2><div class="panel-subtitle">${subject.credits} credits · ${escapeHtml(section ? sectionLabel(section) : "")}</div></div>${alert}</div><div class="report-summary"><div class="report-stat"><span>Classes held</span><strong>${sessions.length}</strong></div><div class="report-stat"><span>Classes attended</span><strong>${attended}</strong></div><div class="report-stat"><span>Attendance</span><strong class="${rate !== null && rate < data.threshold ? "badge absent" : "report-rate"}">${rate === null ? "—" : rate + "%"}</strong></div><div class="report-stat"><span>Present · Absent · Late</span><strong>${present} · ${absent} · ${late}</strong></div><div class="report-stat"><span>Not marked</span><strong>${unmarked}</strong></div></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Class period</th><th>Your status</th></tr></thead><tbody>${history}</tbody></table>${sessions.length ? "" : '<div class="empty-state"><strong>No sessions held yet</strong>Subject attendance will appear here after classes are recorded.</div>'}</div></section>`;
+        }).join("");
+        $("student-rate").textContent = totalHeld ? `${Math.round(totalAttended / totalHeld * 100)}%` : "—";
+        $("student-threshold").textContent = `${data.threshold}%`;
+        $("student-empty").hidden = subjects.length > 0;
+      };
+      const renderAll = () => {
+        if (!teacher) return;
+        renderSetup();
+        renderSessionTable();
+        renderMarking();
+        renderRoster();
+        renderReports();
+        if (student) renderStudentPortal();
+      };
+      const roleSwitch = role => {
+        const isTeacher = role === "teacher";
+        const hasLoginAccount = data.teachers.some(item => auth.teachers[item.id]);
+        $("teacher-tab").classList.toggle("active", isTeacher);
+        $("student-tab").classList.toggle("active", !isTeacher);
+        $("teacher-tab").setAttribute("aria-selected", String(isTeacher));
+        $("student-tab").setAttribute("aria-selected", String(!isTeacher));
+        $("teacher-login-form").hidden = !isTeacher || !hasLoginAccount;
+        $("teacher-setup-form").hidden = !isTeacher || hasLoginAccount;
+        $("student-login-form").hidden = isTeacher;
+      };
+      const signOut = () => {
+        teacher = null;
+        student = null;
+        activeSessionId = "";
+        $("teacher-app").hidden = true;
+        $("student-app").hidden = true;
+        $("login-screen").hidden = false;
+        $("teacher-password").value = "";
+        $("student-login-pin").value = "";
+        roleSwitch("teacher");
+      };
+      const openTeacher = current => {
+        teacher = current;
+        student = null;
+        $("login-screen").hidden = true;
+        $("student-app").hidden = true;
+        $("teacher-app").hidden = false;
+        $("teacher-name").textContent = current.name;
+        $("top-date").textContent = new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+        $("session-form").hidden = false;
+        document.querySelectorAll(".nav-button").forEach(button => button.classList.toggle("active", button.dataset.page === "dashboard"));
+        document.querySelectorAll(".page").forEach(page => page.classList.toggle("active", page.id === "page-dashboard"));
+        $("breadcrumb-page").textContent = "Overview";
+        renderAll();
+      };
+      const openStudent = current => {
+        student = current;
+        teacher = null;
+        $("login-screen").hidden = true;
+        $("teacher-app").hidden = true;
+        $("student-app").hidden = false;
+        renderStudentPortal();
+      };
+      const makeCredential = async password => {
+        if (!crypto.subtle) throw new Error("Secure password hashing is unavailable in this browser.");
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+        const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: HASH_ITERATIONS, hash: "SHA-256" }, key, 256);
+        return { salt: btoa(String.fromCharCode(...salt)), hash: btoa(String.fromCharCode(...new Uint8Array(bits))) };
+      };
+      const verifyCredential = async (password, credential) => {
+        if (!credential || !crypto.subtle) return false;
+        const salt = Uint8Array.from(atob(credential.salt), ch => ch.charCodeAt(0));
+        const expected = Uint8Array.from(atob(credential.hash), ch => ch.charCodeAt(0));
+        const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+        const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: HASH_ITERATIONS, hash: "SHA-256" }, key, 256));
+        return bits.length === expected.length && bits.every((value, index) => value === expected[index]);
+      };
+      const migrateLegacy = legacy => {
+        const migrated = emptyData();
+        const teacherAccount = { id: "teacher", name: "Legacy teacher", admin: true };
+        migrated.teachers.push(teacherAccount);
+        const section = { id: "legacy-section", year: "Legacy", semester: "Imported", branch: "Legacy class", name: "A" };
+        const subject = { id: "legacy-subject", sectionId: section.id, code: "IMPORTED", name: "Imported legacy attendance", credits: 0 };
+        migrated.sections.push(section);
+        migrated.subjects.push(subject);
+        migrated.assignments.push({ id: "legacy-assignment", teacherId: teacherAccount.id, subjectId: subject.id, sectionId: section.id });
+        const students = Array.isArray(legacy.students) ? legacy.students : [];
+        migrated.students = students.map(item => ({ id: item.id, name: item.name, sectionId: section.id }));
+        const dates = new Map();
+        (Array.isArray(legacy.attendance) ? legacy.attendance : []).forEach(record => {
+          if (!dates.has(record.date)) {
+            const session = { id: id("session"), subjectId: subject.id, sectionId: section.id, teacherId: teacherAccount.id, date: record.date, period: "Imported daily record", time: "" };
+            dates.set(record.date, session);
+            migrated.sessions.push(session);
+          }
+          migrated.attendance.push({ id: id("att"), sessionId: dates.get(record.date).id, studentId: record.studentId, status: record.status });
+        });
+        return migrated;
+      };
+      const parseLegacyText = text => {
+        const legacy = { students: [], attendance: [] };
+        const studentIds = new Set();
+        const attendanceKeys = new Set();
+        text.split(/\r?\n/).filter(Boolean).forEach((line, index) => {
+          const parts = line.split("\t");
+          try {
+            if (parts[0] === "S" && parts.length === 3) {
+              const person = { id: decodeURIComponent(escape(atob(parts[1]))), name: decodeURIComponent(escape(atob(parts[2]))) };
+              if (!person.id.trim() || !person.name.trim() || studentIds.has(person.id)) throw new Error("Invalid or duplicate student.");
+              studentIds.add(person.id);
+              legacy.students.push(person);
+            } else if (parts[0] === "A" && parts.length === 4) {
+              const date = new Date(`${parts[1]}T00:00:00Z`);
+              const studentId = decodeURIComponent(escape(atob(parts[2])));
+              const key = `${parts[1]}\u0000${studentId}`;
+              if (!/^\d{4}-\d{2}-\d{2}$/.test(parts[1]) || Number.isNaN(date.getTime())
+                || date.toISOString().slice(0, 10) !== parts[1] || !STATUSES.includes(parts[3])
+                || attendanceKeys.has(key)) throw new Error("Invalid or duplicate attendance row.");
+              attendanceKeys.add(key);
+              legacy.attendance.push({ date: parts[1], studentId, status: parts[3] });
+            } else throw new Error("Unrecognized legacy record.");
+          } catch (error) { throw new Error(`Could not import line ${index + 1}: ${error.message}`); }
+        });
+        if (!legacy.students.length) throw new Error("Legacy data file contains no students.");
+        if (legacy.attendance.some(record => !studentIds.has(record.studentId)))
+          throw new Error("An attendance row refers to a student missing from the file.");
+        return legacy;
+      };
+      const validateData = () => {
+        const uniqueIds = items => {
+          const ids = new Set(items.map(item => item && item.id));
+          return ids.size === items.length && !ids.has(undefined);
+        };
+        const validDate = value => {
+          if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+          const parsed = new Date(`${value}T00:00:00Z`);
+          return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+        };
+        if (!Number.isInteger(data.threshold) || data.threshold < 1 || data.threshold > 100)
+          throw new Error("Saved attendance minimum is invalid.");
+        if (!uniqueIds(data.sections) || !uniqueIds(data.subjects) || !uniqueIds(data.students)
+          || !uniqueIds(data.teachers) || !uniqueIds(data.assignments) || !uniqueIds(data.sessions))
+          throw new Error("Saved records contain missing or duplicate IDs.");
+        const sections = new Set(data.sections.map(item => item.id));
+        const teachers = new Set(data.teachers.map(item => item.id));
+        const subjectById = new Map(data.subjects.map(item => [item.id, item]));
+        const studentIds = new Set(data.students.map(item => item.id));
+        if (data.sections.some(item => !item.year || !item.semester || !item.branch || !item.name)
+          || data.subjects.some(item => !item.code || !item.name || !Number.isFinite(item.credits)
+            || item.credits < 0 || !sections.has(item.sectionId))
+          || data.students.some(item => !item.id || !item.name || !sections.has(item.sectionId))
+          || data.teachers.some(item => !item.id || !item.name))
+          throw new Error("Saved academic, student or teacher data is invalid.");
+        const assignmentKeys = new Set();
+        if (data.assignments.some(item => !teachers.has(item.teacherId) || !sections.has(item.sectionId)
+          || !subjectById.has(item.subjectId) || subjectById.get(item.subjectId).sectionId !== item.sectionId
+          || assignmentKeys.has(`${item.teacherId}:${item.subjectId}:${item.sectionId}`)
+          || !assignmentKeys.add(`${item.teacherId}:${item.subjectId}:${item.sectionId}`)))
+          throw new Error("Saved teaching assignments are invalid or duplicated.");
+        const sessionIds = new Set(data.sessions.map(item => item.id));
+        if (data.sessions.some(item => !validDate(item.date) || !item.period || !teachers.has(item.teacherId)
+          || !sections.has(item.sectionId) || !subjectById.has(item.subjectId)
+          || subjectById.get(item.subjectId).sectionId !== item.sectionId))
+          throw new Error("Saved class sessions are invalid.");
+        const attendanceKeys = new Set();
+        if (data.attendance.some(item => !sessionIds.has(item.sessionId) || !studentIds.has(item.studentId)
+          || !STATUSES.includes(item.status)
+          || !data.sessions.some(session => session.id === item.sessionId
+            && session.sectionId === byId(data.students, item.studentId).sectionId)
+          || attendanceKeys.has(`${item.sessionId}:${item.studentId}`)
+          || !attendanceKeys.add(`${item.sessionId}:${item.studentId}`)))
+          throw new Error("Saved attendance has invalid or duplicate student/session records.");
+      };
+      const load = async () => {
+        const saved = localStorage.getItem(DATA_KEY);
+        const savedAuth = localStorage.getItem(AUTH_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const requiredArrays = ["sections", "subjects", "students", "teachers", "assignments", "sessions", "attendance"];
+          if (!parsed || requiredArrays.some(key => !Array.isArray(parsed[key]))) throw new Error("Saved university data is invalid.");
+          data = Object.assign(emptyData(), parsed);
+        } else {
+          const oldStored = localStorage.getItem(OLD_DATA_KEY);
+          const legacy = oldStored ? JSON.parse(oldStored) : null;
+          if (legacy && legacy.students && legacy.students.length) data = migrateLegacy(legacy);
+        }
+        if (savedAuth) {
+          const old = JSON.parse(savedAuth);
+          auth.teachers = old.teachers || Object.create(null);
+          auth.students = old.students || Object.create(null);
+          if (old.teacher && data.teachers.some(item => item.id === "teacher")) auth.teachers.teacher = old.teacher;
+          if (old.teacher && !data.teachers.length) {
+            auth.teachers.teacher = old.teacher;
+            data.teachers.push({ id: "teacher", name: "Teacher", admin: true });
+          }
+        }
+        if (data.teachers.length === 0 && auth.teachers && Object.keys(auth.teachers).length) {
+          Object.keys(auth.teachers).forEach(key => data.teachers.push({ id: key, name: key, admin: data.teachers.length === 0 }));
+        }
+        if (data.teachers.length && !data.assignments.length && data.teachers[0].id === "teacher" && data.subjects.length) {
+          data.assignments.push({ id: id("assignment"), teacherId: "teacher", subjectId: data.subjects[0].id, sectionId: data.subjects[0].sectionId });
+        }
+        validateData();
+        if (!saved) persist();
+      };
+      const setPage = pageName => {
+        const labels = { dashboard: "Overview", setup: "Subjects & setup", students: "Students", reports: "History & reports" };
+        document.querySelectorAll(".nav-button").forEach(button => {
+          button.classList.toggle("active", button.dataset.page === pageName);
+          if (button.dataset.page === pageName) button.setAttribute("aria-current", "page");
+          else button.removeAttribute("aria-current");
+        });
+        document.querySelectorAll(".page").forEach(page => page.classList.toggle("active", page.id === `page-${pageName}`));
+        $("breadcrumb-page").textContent = labels[pageName];
+      };
+      document.querySelectorAll(".nav-button").forEach(button => button.addEventListener("click", () => setPage(button.dataset.page)));
+      $("teacher-tab").addEventListener("click", () => roleSwitch("teacher"));
+      $("student-tab").addEventListener("click", () => roleSwitch("student"));
+      $("teacher-login-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        const loginId = $("teacher-login-id").value.trim().toLowerCase();
+        const account = data.teachers.find(item => item.id.toLowerCase() === loginId);
+        try {
+          if (!account || !await verifyCredential($("teacher-password").value, auth.teachers[account.id])) {
+            setMessage($("teacher-login-message"), "Account ID or password doesn't match.", "error");
+            return;
+          }
+          setMessage($("teacher-login-message"), "", "");
+          openTeacher(account);
+        } catch (error) { setMessage($("teacher-login-message"), error.message, "error"); }
+      });
+      $("teacher-setup-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        const accountId = $("teacher-new-id").value.trim();
+        const password = $("teacher-new-password").value;
+        if (password !== $("teacher-confirm-password").value) { setMessage($("teacher-setup-message"), "Those passwords do not match.", "error"); return; }
+        const hasLoginAccount = data.teachers.some(item => auth.teachers[item.id]);
+        if (hasLoginAccount && data.teachers.some(item => item.id.toLowerCase() === accountId.toLowerCase())) { setMessage($("teacher-setup-message"), "That teacher account ID already exists.", "error"); return; }
+        try {
+          const account = { id: accountId, name: $("teacher-new-name").value.trim(), admin: true };
+          auth.teachers[account.id] = await makeCredential(password);
+          if (!hasLoginAccount && data.teachers.length) {
+            const previousId = data.teachers[0].id;
+            data.teachers = data.teachers.filter(item => item.id !== previousId);
+            data.assignments.forEach(item => { if (item.teacherId === previousId) item.teacherId = account.id; });
+          }
+          data.teachers.push(account);
+          if (!persist()) {
+            data.teachers = data.teachers.filter(item => item !== account);
+            delete auth.teachers[account.id];
+            return;
+          }
+          event.currentTarget.reset();
+          roleSwitch("teacher");
+          setMessage($("teacher-login-message"), "Account created. Sign in to continue.", "success");
+        } catch (error) { setMessage($("teacher-setup-message"), error.message, "error"); }
+      });
+      $("student-login-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        const studentId = $("student-login-id").value.trim();
+        const account = data.students.find(item => item.id.toLowerCase() === studentId.toLowerCase());
+        try {
+          if (!account || !await verifyCredential($("student-login-pin").value, auth.students[account.id])) {
+            setMessage($("student-login-message"), "Student ID or PIN doesn't match.", "error");
+            return;
+          }
+          $("student-login-pin").value = "";
+          openStudent(account);
+        } catch (error) { setMessage($("student-login-message"), error.message, "error"); }
+      });
+      $("teacher-signout").addEventListener("click", signOut);
+      $("student-signout").addEventListener("click", signOut);
+      $("session-date").value = todayString;
+      $("session-form").addEventListener("submit", event => {
+        event.preventDefault();
+        const assignment = assignmentFromValue($("session-assignment").value);
+        if (!assignment || (!teacher.admin && assignment.teacherId !== teacher.id)) { toast("Choose one of your assigned subjects and sections."); return; }
+        const session = { id: id("session"), subjectId: assignment.subjectId, sectionId: assignment.sectionId, teacherId: teacher.id, date: $("session-date").value, period: $("session-period").value.trim(), time: $("session-time").value || "" };
+        if (data.sessions.some(item => item.subjectId === session.subjectId && item.sectionId === session.sectionId && item.date === session.date && item.period.toLowerCase() === session.period.toLowerCase() && item.time === session.time)) {
+          toast("A session with this subject, section, date and period already exists."); return;
+        }
+        data.sessions.push(session);
+        if (!persist()) { data.sessions.pop(); return; }
+        activeSessionId = session.id;
+        renderAll();
+        toast("Attendance session started.");
+      });
+      $("session-rows").addEventListener("click", event => {
+        const button = event.target.closest("[data-review]");
+        if (!button) return;
+        activeSessionId = button.dataset.review;
+        renderMarking();
+        $("marking-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      $("attendance-rows").addEventListener("change", event => {
+        if (!event.target.matches(".status-select")) return;
+        try {
+          const session = byId(data.sessions, activeSessionId);
+          saveStatus(session, event.target.dataset.student, event.target.value);
+          renderAll();
+          toast("Attendance updated.");
+        } catch (error) { toast(error.message); renderMarking(); }
+      });
+      $("section-form").addEventListener("submit", event => {
+        event.preventDefault();
+        const section = { id: id("section"), year: $("academic-year").value.trim(), semester: $("semester").value.trim(), branch: $("branch").value.trim(), name: $("section-name").value.trim() };
+        const duplicate = data.sections.some(item => [item.year, item.semester, item.branch, item.name].join("|").toLowerCase() === [section.year, section.semester, section.branch, section.name].join("|").toLowerCase());
+        if (duplicate) { toast("That academic section already exists."); return; }
+        data.sections.push(section);
+        if (!persist()) data.sections.pop();
+        else { event.currentTarget.reset(); renderAll(); toast("Academic section added."); }
+      });
+      $("subject-form").addEventListener("submit", event => {
+        event.preventDefault();
+        const sectionId = $("subject-section").value;
+        const subject = { id: id("subject"), sectionId, code: $("subject-code").value.trim(), name: $("subject-name").value.trim(), credits: Number($("subject-credits").value) };
+        if (!eligibleSections().some(section => section.id === sectionId)) { toast("Choose a valid section."); return; }
+        if (data.subjects.some(item => item.sectionId === sectionId && item.code.toLowerCase() === subject.code.toLowerCase())) { toast("That subject code already exists in this section."); return; }
+        data.subjects.push(subject);
+        if (!persist()) data.subjects.pop();
+        else { event.currentTarget.reset(); $("subject-credits").value = "3"; renderAll(); toast("Subject added."); }
+      });
+      $("teacher-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        if (!teacher.admin) { toast("Only the local administrator can create accounts."); return; }
+        const accountId = $("new-teacher-id").value.trim();
+        if (data.teachers.some(item => item.id.toLowerCase() === accountId.toLowerCase())) { toast("That teacher ID already exists."); return; }
+        try {
+          const account = { id: accountId, name: $("new-teacher-name").value.trim(), admin: false };
+          auth.teachers[account.id] = await makeCredential($("new-teacher-password").value);
+          data.teachers.push(account);
+          if (!persist()) { data.teachers.pop(); delete auth.teachers[account.id]; return; }
+          event.currentTarget.reset();
+          renderAll();
+          toast("Teacher account created. Assign subject access next.");
+        } catch (error) { toast(error.message); }
+      });
+      $("assignment-form").addEventListener("submit", event => {
+        event.preventDefault();
+        if (!teacher.admin) { toast("Only the local administrator can manage assignments."); return; }
+        const [subjectId, sectionId] = $("assignment-subject").value.split(":");
+        const teacherId = $("assignment-teacher").value;
+        if (!byId(data.subjects, subjectId) || !byId(data.sections, sectionId) || !byId(data.teachers, teacherId)) { toast("Choose a valid teacher, subject and section."); return; }
+        if (data.assignments.some(item => item.teacherId === teacherId && item.subjectId === subjectId && item.sectionId === sectionId)) { toast("That teacher is already assigned to this subject and section."); return; }
+        const assignment = { id: id("assignment"), teacherId, subjectId, sectionId };
+        data.assignments.push(assignment);
+        if (!persist()) data.assignments.pop();
+        else { renderAll(); toast("Teaching assignment saved."); }
+      });
+      $("section-list").addEventListener("click", event => {
+        if (!teacher || !teacher.admin) { toast("Only the local administrator can manage sections."); return; }
+        const edit = event.target.closest("[data-edit-section]");
+        const remove = event.target.closest("[data-remove-section]");
+        if (!edit && !remove) return;
+        const section = byId(data.sections, edit ? edit.dataset.editSection : remove.dataset.removeSection);
+        if (!section) return;
+        if (edit) {
+          const next = {
+            year: prompt("Academic year:", section.year),
+            semester: prompt("Semester:", section.semester),
+            branch: prompt("Branch / program:", section.branch),
+            name: prompt("Section:", section.name)
+          };
+          if (Object.values(next).some(value => value === null)) return;
+          if (Object.values(next).some(value => !value.trim())) { toast("Section details cannot be empty."); return; }
+          const previous = { year: section.year, semester: section.semester, branch: section.branch, name: section.name };
+          Object.assign(section, Object.fromEntries(Object.entries(next).map(([key, value]) => [key, value.trim()])));
+          if (data.sections.some(item => item !== section
+            && [item.year, item.semester, item.branch, item.name].join("|").toLowerCase()
+              === [section.year, section.semester, section.branch, section.name].join("|").toLowerCase())) {
+            Object.assign(section, previous);
+            toast("That section already exists.");
+            return;
+          }
+          if (!persist()) Object.assign(section, previous);
+          else { renderAll(); toast("Section details updated."); }
+          return;
+        }
+        const hasLinkedData = data.students.some(item => item.sectionId === section.id)
+          || data.subjects.some(item => item.sectionId === section.id);
+        if (hasLinkedData) { toast("Remove or move this section's students and subjects before deleting it."); return; }
+        data.sections = data.sections.filter(item => item !== section);
+        if (!persist()) data.sections.push(section);
+        else { renderAll(); toast("Section removed."); }
+      });
+      $("subject-list").addEventListener("click", event => {
+        if (!teacher || !teacher.admin) { toast("Only the local administrator can manage subjects."); return; }
+        const assignmentButton = event.target.closest("[data-remove-assignment]");
+        if (assignmentButton) {
+          const assignment = byId(data.assignments, assignmentButton.dataset.removeAssignment);
+          if (!assignment) return;
+          data.assignments = data.assignments.filter(item => item !== assignment);
+          if (!persist()) data.assignments.push(assignment);
+          else { renderAll(); toast("Teacher assignment removed."); }
+          return;
+        }
+        const edit = event.target.closest("[data-edit-subject]");
+        const remove = event.target.closest("[data-remove-subject]");
+        if (!edit && !remove) return;
+        const subject = byId(data.subjects, (edit || remove).dataset.editSubject || (edit || remove).dataset.removeSubject);
+        if (!subject) return;
+        if (edit) {
+          const code = prompt("Subject code:", subject.code);
+          if (code === null) return;
+          const name = prompt("Subject name:", subject.name);
+          if (name === null) return;
+          const creditsValue = prompt("Credits:", String(subject.credits));
+          if (creditsValue === null) return;
+          const credits = Number(creditsValue);
+          if (!code.trim() || !name.trim() || !Number.isFinite(credits) || credits < 0 || credits > 30) {
+            toast("Enter a subject code, name, and credits from 0 to 30.");
+            return;
+          }
+          if (data.subjects.some(item => item !== subject && item.sectionId === subject.sectionId
+            && item.code.toLowerCase() === code.trim().toLowerCase())) {
+            toast("That subject code already exists in this section.");
+            return;
+          }
+          const previous = { code: subject.code, name: subject.name, credits: subject.credits };
+          Object.assign(subject, { code: code.trim(), name: name.trim(), credits });
+          if (!persist()) Object.assign(subject, previous);
+          else { renderAll(); toast("Subject details updated."); }
+          return;
+        }
+        if (data.sessions.some(session => session.subjectId === subject.id)) {
+          toast("This subject has attendance sessions and cannot be removed.");
+          return;
+        }
+        data.subjects = data.subjects.filter(item => item !== subject);
+        const assignments = data.assignments.filter(item => item.subjectId === subject.id);
+        data.assignments = data.assignments.filter(item => item.subjectId !== subject.id);
+        if (!persist()) {
+          data.subjects.push(subject);
+          data.assignments.push(...assignments);
+        } else { renderAll(); toast("Subject removed."); }
+      });
+      $("student-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        const person = { id: $("student-id").value.trim(), name: $("student-name").value.trim(), sectionId: $("student-section").value };
+        const pin = $("student-pin").value;
+        if (!/^\d{4,8}$/.test(pin)) { toast("Student PIN must contain 4–8 digits."); return; }
+        if (data.students.some(item => item.id.toLowerCase() === person.id.toLowerCase())) { toast("That student ID already exists."); return; }
+        if (!eligibleSections().some(section => section.id === person.sectionId)) { toast("Choose a section you are permitted to manage."); return; }
+        try {
+          auth.students[person.id] = await makeCredential(pin);
+          data.students.push(person);
+          if (!persist()) { data.students.pop(); delete auth.students[person.id]; return; }
+          event.currentTarget.reset();
+          renderAll();
+          toast("Student enrolled. Share the PIN with them privately.");
+        } catch (error) { toast(error.message); }
+      });
+      $("roster-search").addEventListener("input", renderRoster);
+      $("roster-rows").addEventListener("click", async event => {
+        const button = event.target.closest("[data-reset-pin]");
+        if (!button) return;
+        const target = data.students.find(item => item.id === button.dataset.resetPin);
+        if (!target || (!teacher.admin && !eligibleSections().some(section => section.id === target.sectionId))) {
+          toast("You are not authorized to update this student's access.");
+          return;
+        }
+        const pin = prompt(`Enter a new 4–8 digit PIN for ${target.name}:`);
+        if (pin === null) return;
+        if (!/^\d{4,8}$/.test(pin)) { toast("PIN must contain 4–8 digits."); return; }
+        try {
+          const previous = auth.students[target.id];
+          auth.students[target.id] = await makeCredential(pin);
+          if (!persist()) {
+            if (previous) auth.students[target.id] = previous;
+            else delete auth.students[target.id];
+          } else toast("Student PIN updated.");
+        } catch (error) { toast(error.message); }
+      });
+      $("legacy-import-button").addEventListener("click", () => $("legacy-file").click());
+      $("legacy-file").addEventListener("change", async event => {
+        const file = event.target.files[0];
+        if (!file) return;
+        try {
+          if (!teacher || !teacher.admin) throw new Error("Only the local administrator can import legacy data.");
+          if (data.students.length && !confirm("Importing replaces current sections, students, sessions and attendance. Continue?")) return;
+          const imported = migrateLegacy(parseLegacyText(await file.text()));
+          if (teacher) {
+            imported.teachers = data.teachers;
+            imported.assignments.forEach(item => { item.teacherId = teacher.id; });
+            imported.sessions.forEach(item => { item.teacherId = teacher.id; });
+            imported.assignments = imported.assignments.filter(item => Boolean(byId(imported.teachers, item.teacherId)));
+          }
+          const oldData = data;
+          const oldAuthStudents = auth.students;
+          auth.students = Object.assign(Object.create(null), Object.fromEntries(
+            Object.entries(auth.students).filter(([studentId]) => imported.students.some(item => item.id === studentId))));
+          data = imported;
+          if (!persist()) { data = oldData; auth.students = oldAuthStudents; return; }
+          renderAll();
+          toast("Legacy dates imported as distinct class sessions.");
+        } catch (error) { toast(`Legacy import failed: ${error.message}`); }
+        finally { event.target.value = ""; }
+      });
+      ["report-assignment", "report-date"].forEach(key => $(key).addEventListener("change", renderReports));
+      $("report-student").addEventListener("input", renderReports);
+      $("report-export").addEventListener("click", exportReportCsv);
+      $("backup-button").addEventListener("click", () => {
+        if (!teacher || !teacher.admin) { toast("Only the local administrator can download a full data backup."); return; }
+        download("university-attendance-backup.json", JSON.stringify(data, null, 2), "application/json;charset=utf-8");
+        toast("Data backup downloaded. Keep it private.");
+      });
+      $("teacher-form").hidden = true;
+      $("section-form").hidden = true;
+      $("subject-form").hidden = true;
+      $("assignment-form").hidden = true;
+      $("threshold-input").value = String(data.threshold);
+      $("threshold-form").addEventListener("submit", event => {
+        event.preventDefault();
+        if (!teacher || !teacher.admin) { toast("Only the local administrator can change the minimum."); return; }
+        const threshold = Number($("threshold-input").value);
+        if (!Number.isInteger(threshold) || threshold < 1 || threshold > 100) { toast("Minimum must be a whole percentage from 1 to 100."); return; }
+        const previous = data.threshold;
+        data.threshold = threshold;
+        if (persist()) { renderAll(); toast("Attendance minimum updated."); }
+        else data.threshold = previous;
+      });
+      $("top-date").textContent = new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+      load().then(() => {
+        roleSwitch("teacher");
+        renderAll();
+      }).catch(error => {
+        setMessage($("teacher-login-message"), `Saved data could not be loaded: ${error.message}`, "error");
+        $("teacher-login-form").querySelector("button").disabled = true;
+        $("teacher-setup-form").querySelector("button").disabled = true;
+        $("student-login-form").querySelector("button").disabled = true;
+      });
+    })();
+  </script>
+</body>
+</html>
